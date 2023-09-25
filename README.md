@@ -1,24 +1,31 @@
-# BM_sim_fit
-Bloch-McConnell simulation (full numerical and analytical) and fit (multi B1)
-preRelease 2017
+# CEST-Generator
 
-the code was used and is documented for the paper:
+#### **Introduction:**
+This repository contains the MATLAB implementation for generating synthetic 2D CEST datasets and in silico phantoms. It is designed to simulate Chemical Exchange Saturation Transfer (CEST) MRI datasets and serves as a reference standard for improving neural network-based noise reduction methods. The repository is an extension of the validated Bloch-McConnell Simulation Tool developed by Zaiss et al.
 
-Zaiss, M., Angelovski, G., Demetriou, E., McMahon, M. T., Golay, X. and Scheffler, K. (2017), QUESP and QUEST revisited – fast and accurate quantitative CEST experiments. Magn. Reson. Med. doi:10.1002/mrm.26813
+#### **Features:**
+- **In Silico Phantom Creation**: Generate complex geometric phantoms by layering various geometric shapes of different sizes and arrangements, including ellipsoidal foregrounds to simulate the diversity of biological structures.
+- **Parameter Customization**: Customize the parameters for each dataset, including relaxation rates, concentration parameters, and exchange rates, allowing the simulation of a spectrum of 2-5 pool systems.
+- **Z-Spectra Generation**: Calculate Z-spectra for each dataset at a voxel level, incorporating Gaussian saturation pulses and variations in MRI parameters like echo time (TE), repetition time (TR), and offset frequency range (??).
 
+#### **Usage:**
+1. **Initialize Parameters**: Run `generateCESTPoolParams` to initialize and generate random parameters for each CEST pool.
+2. **Generate Phantoms**: Use the main function to create in silico phantoms and generate synthetic CEST datasets.
+3. **Analyze and Visualize Data**: Utilize the generated data and Z-spectra for further analysis and improvement of image processing and noise reduction methods in CEST MRI studies.
 
+#### **Requirements:**
+- MATLAB (version R2018 or later)
 
-Allows for simulation of BM system upon RF presaturation 
- - multiple pools possible (water, 5 CEST, 1  semisolid MT)
- - trains RF pulses with arbitratry pulse shapes possible (gauss, sinc, spin-lock already implemented)
- - both analytical (if possible) and full numerical simulation possible
- - transient and steady-state possible
- - first order readout schemes possible
- - Both full Z-spectra and single offset evaluation possible
- - Ready for multi parameter simulations
- 
-**Read more about usage in \doc\BM_Documentation.docx 	and \doc\BM_tutorial.pptx**
+#### **Repository Structure:**
+- `/src`: Contains the main scripts and functions for generating in silico phantoms and synthetic CEST datasets.
+- `/data`: (If applicable) Holds the generated synthetic datasets and in silico phantoms.
+- `/docs`: Contains documentation and additional information on the repository and its components.
 
+#### **Acknowledgements:**
+This work extends the Bloch-McConnell Simulation Tool by Zaiss et al. [GitHub Link](https://github.com/cest-sources/BM_sim_fit/). We express our gratitude to the original authors for their valuable contribution to the scientific community.
 
-###Acknowledgments
-This code was created by Moritz Zaiss based on the cw BM simulation and fit of Shanrong Zhang. A revised version was created with the help of Patrick Schuenke, Christian Meyer, Christian David and Volkert Roeloffs.
+#### **License:**
+This project is available under the GNU license. Please refer to the LICENSE file in the repository for more details.
+
+#### **Contribution & Support:**
+Contributions to improve and extend the functionality are welcome. Please refer to the CONTRIBUTING file for guidelines. For support and queries, please open an issue on the GitHub repository.
