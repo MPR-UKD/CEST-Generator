@@ -1,162 +1,98 @@
-%%
-% Title: Phantom Image Generation with Random Shapes
+% Title: Generation of Parameters for CEST Pools
+% Description: This function is responsible for generating the parameters of
+% CEST pools. It initiates the parameters for a set number of pools, 
+% and then, based on user-defined limits and ranges, it populates the 
+% parameters needed for each pool such as relaxation and concentration 
+% parameters, exchange rates, and ppm values relative to the reference pool.
+% The generated parameters are crucial for simulating CEST spectra and 
+% further analyses in CEST MRI studies.
 
-% Description: This MATLAB script generates phantom images by creating 
-% random shapes within a predefined foreground. The generated shapes 
-% include circles, rectangles, curves, and polygons with rounded corners. 
-% Each object is randomly placed, dilated, and combined to create a 
-% composite phantom image. The script provides a useful tool for testing 
-% image processing and analysis techniques on synthetic data.
-%%
-function [phantom, foreground] = generate_phantom(size, num_objects, full)
-   
-  if full
-      foreground = ones(size);
-      phantom = ones(size);
-  else
-      % Create an empty grayscale image
-      phantom = zeros(size);
+function [CEST_Parameter] = generateCESTPoolParams(max_num_of_pools, ppm_range)
 
-      % Add foreground to the image
-      foreground = add_foreground(phantom);
-  end
-  
-  % Find non-zero elements in the foreground
-  [X,Y] = find(foreground ~= 0); 
-  
-  % Generate random coordinates, sizes, and shapes for the objects
-  for i = 1:num_objects
-            
-    img = zeros(size);
+    %% Pool A
+    CEST_Parameter=init_Sim(struct());
+    CEST_Parameter.dwA=0;
     
-    % Generate random coordinates for object
-    x1 = X(randi(numel(X)));
-    y1 = Y(randi(numel(Y)));
-    x2 = X(randi(numel(X)));
-    y2 = Y(randi(numel(Y)));
-
-    % Define a list of shapes and randomly select one
-    shapes = {'circle', 'rectangle', 'curve', 'polygon'};
-    shape = shapes{randi(numel(shapes))};
+    num_of_pools = max_num_of_pools; %randi(max_num_of_pools);
     
-    % Draw the objects on the image
-    num = randi(25) + 10;
-    for n =1:num
-        if strcmp(shape, 'circle')
-          % Calculate circle parameters and draw on the image
-          r = min([x2 - x1 y2 - y1]) / 2;
-          cx = x1 + r;
-          cy = y1 + r;
-          for x = max([1, cx - r]):min([size(1), cx + r])
-            for y = max([1, cy - r]):min([size(2), cy + r])
-              if (x - cx)^2 + (y - cy)^2 <= r^2
-                img(y, x) = 1;
-              end
-            end
-          end
-        elseif strcmp(shape, 'rectangle')
-          % Draw a rectangle on the image
-          for x = max([1, x1]):min([size(1), x2])
-            for y = max([1, y1]):min([size(2), y2])
-              img(y, x) = 1;
-            end
-          end
-        elseif strcmp(shape, 'curve')
-          % Calculate curve parameters and draw on the image
-          start = randi(180);
-          end_ = start + randi(90) + 45;
-          center = [x1, y1];
-          radius = sqrt((x1 - x2)^2 + (y1 - y2)^2) / 2;
-          angles = linspace(start, end_, 1000);
-          points = [round(center(1) + radius * cosd(angles)); ...
-                    round(center(2) + radius * sind(angles))]';
-          x1 = x2;
-          y1 = y2;
-          x2 = randi(size(1));
-          y2 = randi(size(2));
-          
-          % Draw the curve on the image
-          for j = 1:length(points)
-              try
-                  img(round(points(j,1)), round(points(j,2))) = 1;
-              catch
-              end
-          end
-        elseif strcmp(shape, 'polygon')
-          % Draw a polygon on the image
-          img = img + createRandomPolygonsWithRoundCorners(size, 1, 10);
-        end
+    if max_num_of_pools == 1
+        R1 = 1 /3;
+        R2 = 1 / 1.2;
+    else
+        R1 = 1 / randi([500,1200]) * 1000;
+        R2 = 1 / randi([60,300]) * 1000;
+    end
+     
+    CEST_Parameter.R1A=R1;  % PBS
+    CEST_Parameter.R2A=R2;    % PBS
+    
+    % first CEST pool B
+    if num_of_pools >= 2
+        CEST_Parameter.fB=get_random_rel_conc();  % rel. conc 10mM/111M
+        CEST_Parameter.kBA=get_random_exchange_rate();   % exchange rate in Hz ( the fast one, kBA is calculated by this and fB)
+        CEST_Parameter.dwB=get_rel_ppm(ppm_range);     % ppm  relative to dwA
+        CEST_Parameter.R1B=get_relaxation_rate_T1();      % R1B relaxation rate [Hz]
+        CEST_Parameter.R2B=get_relaxation_rate_T2();     % R2B relaxation rate [Hz]
     end
     
-        % Ensure img values are binary
-    img(img > 1) = 1;
-    
-    % Create a structuring element for dilation
-    se = strel('disk',  randi(5) + 1);
-    
-    % Perform dilation on the image
-    img_dilated = imdilate(img, se);
-    phantom = phantom + i * img_dilated(1:size(1),1:size(2));
-  end
-  
-  % Update the phantom image based on the foreground
-  phantom(foreground == 0) = 0;
-  phantom(foreground == 1) = phantom(foreground == 1) + 1;
-end
-
-function mask = add_foreground(mask)
-    % Define ellipse parameters
-    a = randi(size(mask, 1)) / 4 + size(mask,1) / 4;
-    b = randi(size(mask, 1)) / 4+ size(mask,1) / 4;
-    cx = randi(size(mask, 1)) / 3 + size(mask,1) / 3;
-    cy = randi(size(mask, 1)) / 3 + size(mask,1) / 3;
-    angle = randi(size(mask));
-    
-    % Calculate the points along the ellipse
-    num_points = 36;
-    theta = linspace(0, 2*pi, num_points);
-    x = cx + a * cos(theta) * cos(angle) - b * sin(theta) * sin(angle);
-    y = cy + a * cos(theta) * sin(angle) + b * sin(theta) * cos(angle);
-
-    % Create a binary mask of the ellipse
-    mask = roipoly(mask, x, y);
-    mask(mask > 1) = 1;
-end
-
-function mask = randomPolygon(n, max_side)
-
-    % generate random x and y coordinates for the vertices of the polygon
-    x = max_side * rand(1, n);
-    y = max_side * rand(1, n);
-
-    % Create a binary mask of the polygon
-    mask = poly2mask(x,y,max_side,max_side);
-
-end
-function mask = createRandomPolygonsWithRoundCorners(imageSize, numPolygons, cornerRadius)
-
-    % Create an empty mask image
-    mask = false(imageSize);
-
-    % Loop over the number of polygons to create
-    for i = 1:numPolygons
-        % Generate random polygon vertices
-        polyVerts = rand(2,5) .* imageSize';
-
-        % Create a polygon object with rounded corners
-        polygon = polybuffer(polyVerts', 'lines', cornerRadius);
-        polygon = rmholes(rmholes(polygon));
-
-        % Fill the polygon in the mask image
-        try
-            mask = mask + poly2mask(round(polygon.Vertices(:,1)), round(polygon.Vertices(:,2)), imageSize(1), imageSize(2));
-        catch
-            % Handle exceptions
-            b = 2;
-        end
+    % second CEST pool D
+    if num_of_pools >= 3
+        CEST_Parameter.fD=get_random_rel_conc();  % rel. conc 10mM/111M
+        CEST_Parameter.kDA=get_random_exchange_rate();   % exchange rate in Hz ( the fast one, kBA is calculated by this and fB)
+        CEST_Parameter.dwD=get_rel_ppm(ppm_range);     % ppm  relative to dwA
+        CEST_Parameter.R1D=get_relaxation_rate_T1();      % R1B relaxation rate [Hz]
+        CEST_Parameter.R2D=get_relaxation_rate_T2();     % R2B relaxation rate [Hz]
     end
     
-    % Ensure mask values are binary
-    mask(mask > 1) = 1;
+    % third CEST pool E
+    if num_of_pools >= 4
+        CEST_Parameter.fE=get_random_rel_conc();  % rel. conc 10mM/111M
+        CEST_Parameter.kEA=get_random_exchange_rate();   % exchange rate in Hz ( the fast one, kBA is calculated by this and fB)
+        CEST_Parameter.dwE=get_rel_ppm(ppm_range);     % ppm  relative to dwA
+        CEST_Parameter.R1E=get_relaxation_rate_T1();      % R1B relaxation rate [Hz]
+        CEST_Parameter.R2E=get_relaxation_rate_T2();     % R2B relaxation rate [Hz]
+    end
+    
+    % forth CEST pool F
+    if num_of_pools >= 5
+        CEST_Parameter.fF=get_random_rel_conc();  % rel. conc 10mM/111M
+        CEST_Parameter.kFA=get_random_exchange_rate();   % exchange rate in Hz ( the fast one, kBA is calculated by this and fB)
+        CEST_Parameter.dwF=get_rel_ppm(ppm_range);     % ppm  relative to dwA
+        CEST_Parameter.R1F=get_relaxation_rate_T1();      % R1B relaxation rate [Hz]
+        CEST_Parameter.R2F=get_relaxation_rate_T2();     % R2B relaxation rate [Hz]
+    end
+    
+    CEST_Parameter.n_cest_pool=num_of_pools-1;
+    CEST_Parameter.MT        = 0;
 
+end
+
+
+% Additional auxiliary functions are defined below to aid the generation of random parameters.
+
+function [f] = get_random_rel_conc()
+    % rel. conc X mM/111M - X in range 0 - 400 (Quelle ??)
+    f = (rand(1) + 0.5) ^ 2 * 800 / 1000 / 111;
+end
+
+function [k] = get_random_exchange_rate()
+    % exchange rate in Hz 50 - 2050  (Quelle ??)
+    k = rand(1) * 2000 + 50;
+end
+
+function [ppm] = get_rel_ppm(ppm_range)
+    % ppm rel to dwA in range - max(ppm) to max(ppm) % Delta 0.5 ppm 
+    ppm = randi([-100 * ppm_range, 100 * ppm_range])/ 100;
+end
+
+function [R] = get_relaxation_rate_T1()
+    % T1 0.5 - 2.5 s %Quelle 
+    T1 = 2 * rand(1) + 0.5;
+    R = 1/T1;
+end
+
+function [R] = get_relaxation_rate_T2()
+    % T2 = 0.01 - 0.2 sec = 1 ms - 20 ms  %Quelle 
+    T2 = 0.02 * rand(1) + 0.001;
+    R = 1/T2;
 end
