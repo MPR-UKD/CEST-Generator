@@ -1,5 +1,6 @@
 # CEST-Generator
 
+
 #### **Introduction:**
 This repository contains the MATLAB implementation for generating synthetic 2D CEST datasets and in silico phantoms. It is designed to simulate Chemical Exchange Saturation Transfer (CEST) MRI datasets and serves as a reference standard for improving neural network-based noise reduction methods. The repository is an extension of the validated Bloch-McConnell Simulation Tool developed by Zaiss et al.
 
