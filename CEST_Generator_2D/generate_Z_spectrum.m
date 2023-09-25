@@ -18,7 +18,7 @@ function [Z, x] = generate_Z_spectrum(Scanner_parameter, CEST_Parameter, n)
     Sim.B1            =     Scanner_parameter.B1;                 % standard B1 value in µT
     Sim.Trec          =     Scanner_parameter.Trec;                  % standard recover time in s
     Sim.Zi            =     0;                  % initial magnetisation (should be between -1 and +1)
-    Sim.shape         =     'seq_gauss';            % cases: SPINLOCK, seq_gauss, block, AdiaSL, AdiaSinCos, AdiaInversion,
+    Sim.shape         =     'gauss';            % cases: SPINLOCK, seq_gauss, block, AdiaSL, AdiaSinCos, AdiaInversion,
                                                 % block_trap, gauss, sech, sinc_1, sinc_2, sinc_3, sinc_4
     Sim.pulsed        =     1;                  % 0 = cw saturation, 1 = pulsed saturation
 
