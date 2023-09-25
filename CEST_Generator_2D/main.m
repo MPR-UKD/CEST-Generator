@@ -36,7 +36,7 @@ for k = 1:numIterations
     Scanner_parameter.n = randi([8,20]);             % Number of excitations
     Scanner_parameter.ppm_range = randi([3,6]);      % Chemical shift range in ppm
     
-    [A, B, C, D, E, mask] = generate_pool_params(128); % Generate pool parameters
+    [A, B, C, D, E, mask] = generate_pool_params(20); % Generate pool parameters
     dyn = 100; % Assuming dyn is a constant, you need to specify its value
     image = zeros(size(A.R1,1), size(A.R1,2), 1, dyn);
     
