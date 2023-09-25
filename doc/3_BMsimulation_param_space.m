@@ -95,9 +95,9 @@ clear Space
 % settings for all_offsets = 1 (complete Z-spectrum)
 if Sim.all_offsets == 1
     
-   Space.tp    = [0.5 1 2 3 4];
-   Space.B1    = [5 10 15 25 50 100];
-   Space.Trec  = [0 1 2 5 10 20];
+   Space.tp    = [50];
+   Space.B1    = [5];
+   Space.Trec  = [20];
 
 
 else % settings for all_offsets = 0 / 2
