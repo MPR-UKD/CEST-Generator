@@ -42,7 +42,7 @@ for k = 1:numIterations
     
     for j = 1:max(max(mask))
         [x, y] = find(mask == j);
-        CEST_Parameter = generate_Params(5, Scanner_parameter.ppm_range);
+        CEST_Parameter = generateCESTPoolParams(5, Scanner_parameter.ppm_range);
         
         for i = 1:numel(x)
             pixel_CEST_Parameter = update_pixel_params(CEST_Parameter, A, B, C, D, E, x(i), y(i));
